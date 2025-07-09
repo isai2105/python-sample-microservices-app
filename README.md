@@ -257,6 +257,3 @@ When moving to production:
 3. Modify the code to add new operations
 4. Experiment with different data flows
 5. Practice converting the Docker Compose setup to Kubernetes manifests
-
-Happy learning! 🚀
->>>>>>> 7497e2f (Initial microservices functionality)
