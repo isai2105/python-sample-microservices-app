@@ -1,0 +1,144 @@
+# Docker Compose file for Microservices Learning Environment
+# This sets up all the microservices that the Python app will connect to
+
+version: '3.8'
+
+services:
+  # PostgreSQL - Relational Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: microservices_postgres
+    environment:
+      POSTGRES_DB: microservices_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # MongoDB - NoSQL Document Database Service
+  mongodb:
+    image: mongo:6.0
+    container_name: microservices_mongodb
+    environment:
+      MONGO_INITDB_DATABASE: microservices_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # Redis - In-Memory Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: microservices_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # RabbitMQ - Message Queue Service
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: microservices_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # Elasticsearch - Search Engine Service
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    container_name: microservices_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # Simple API Service (using nginx as placeholder)
+  # In real scenarios, this would be your custom API microservice
+  api_service:
+    image: nginx:alpine
+    container_name: microservices_api
+    ports:
+      - "8080:80"
+    volumes:
+      # Mounts local api_responses folder to Nginx's web root, serving files as static content
+      - ./api_responses:/usr/share/nginx/html
+    healthcheck:
+      # --spider (without downloading the content)
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices_network
+
+  # Adminer - Database Management Tool (Optional)
+  adminer:
+    image: adminer:latest
+    container_name: microservices_adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    networks:
+      - microservices_network
+
+# Volumes for persistent data
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+  elasticsearch_data:
+
+# Network for service communication
+networks:
+  microservices_network:
+    driver: bridge

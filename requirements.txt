@@ -1,0 +1,23 @@
+# Python Requirements for Microservices Learning App
+# Install with: pip install -r requirements.txt
+
+# Core async/http libraries
+asyncio
+aiohttp==3.9.0
+requests==2.31.0
+
+# Database connectors
+psycopg2-binary==2.9.7  # PostgreSQL
+pymongo==4.5.0          # MongoDB
+redis==4.6.0            # Redis
+
+# Message queue
+pika==1.3.2             # RabbitMQ
+
+# Search engine
+elasticsearch==8.8.0    # Elasticsearch
+
+# Utilities
+python-dotenv==1.0.0    # Environment variables
+pydantic==2.7.0         # Data validation
+typing-extensions==4.7.1

@@ -1,0 +1,11 @@
+####### TRICK 1: USE OF "brew tap"
+###
+##
+# When I ran:
+>> brew install mongodb-community 
+it failed with:
+"Warning: No available formula with the name "mongodb-community". Did you mean mongodb-atlas-cli?"
+
+#So I had to execute the following command... which basically add the Mongo repository to brew.. allowing it access to artifacts that are not on the
+#original brew repository
+>> brew tap mongodb/brew && brew install mongodb-community
