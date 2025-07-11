@@ -17,7 +17,16 @@ pika==1.3.2             # RabbitMQ
 # Search engine
 elasticsearch==8.8.0    # Elasticsearch
 
+Flask==3.1.1
+
+# MinIO
+minio==7.1.17
+
 # Utilities
 python-dotenv==1.0.0    # Environment variables
 pydantic==2.7.0         # Data validation
 typing-extensions==4.7.1
+Werkzeug==3.1.3         # Flask has a tight coupling with Werkzeug
+gunicorn==21.2.0        # WSGI HTTP Server for Python web applications
+# Flask comes with a development server, but it has IMPORTANT limitations... 
+# optimized not feasible for real production environments

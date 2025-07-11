@@ -1,0 +1,170 @@
+# MinIO Microservice
+
+A Flask-based microservice for managing file storage operations using MinIO object storage.
+
+## Features
+
+- **Bucket Management**: Create, delete, and list buckets
+- **Object Operations**: Upload, download, delete, and list objects
+- **Presigned URLs**: Generate temporary URLs for secure file access
+- **Object Information**: Get metadata and statistics for objects
+- **Health Checks**: Built-in health monitoring
+- **Docker Support**: Fully containerized with Docker Compose
+- **Error Handling**: Comprehensive error handling and logging
+
+## API Endpoints
+
+### Health Check
+- `GET /health` - Check service health
+
+### Bucket Operations
+- `GET /buckets` - List all buckets
+- `POST /buckets/{bucket_name}` - Create a new bucket
+- `DELETE /buckets/{bucket_name}` - Delete a bucket
+
+### Object Operations
+- `GET /buckets/{bucket_name}/objects` - List objects in a bucket
+- `POST /buckets/{bucket_name}/objects/{object_name}` - Upload an object
+- `GET /buckets/{bucket_name}/objects/{object_name}` - Download an object
+- `DELETE /buckets/{bucket_name}/objects/{object_name}` - Delete an object
+- `GET /buckets/{bucket_name}/objects/{object_name}/info` - Get object information
+- `GET /buckets/{bucket_name}/objects/{object_name}/url` - Get presigned URL
+
+## Quick Start
+
+### Using Docker Compose (Recommended)
+
+1. Clone or copy the files to your project directory
+2. Run the services:
+   ```bash
+   docker-compose up -d
+   ```
+
+This will start:
+- MinIO server on port 9000 (API) and 9001 (Web Console)
+- MinIO microservice on port 5000
+
+### Manual Setup
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. Set environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your MinIO configuration
+   ```
+
+3. Run the application:
+   ```bash
+   python app.py
+   ```
+
+## Configuration
+#### To create a bucket (MANUALLY): there is an endpoint to create one automatically
+- Go to: http://localhost:9001/
+- Access with the credentials defined in the environment variables
+
+Environment variables:
+
+- `MINIO_ENDPOINT`: MinIO server endpoint (default: localhost:9000)
+- `MINIO_ACCESS_KEY`: MinIO access key (default: minioadmin)
+- `MINIO_SECRET_KEY`: MinIO secret key (default: minioadmin)
+- `MINIO_SECURE`: Use HTTPS (default: false)
+- `DEFAULT_BUCKET`: Default bucket name (default: default-bucket)
+- `DEBUG`: Enable debug mode (default: false)
+
+## Usage Examples
+
+### Upload a file
+```bash
+curl -X POST \
+  -F "file=@sample_bucket_files/file1.txt" \
+  http://localhost:5010/buckets/bucket-1/objects/file1.txt
+```
+
+### Download a file
+```bash
+curl -X GET \
+  http://localhost:5010/buckets/bucket-1/objects/file1.txt \
+  -o downloaded-file.txt
+```
+
+### List objects
+```bash
+curl -X GET \
+  http://localhost:5010/buckets/bucket-1/objects
+```
+
+### Get presigned URL
+```bash
+curl -X GET \
+  "http://localhost:5010/buckets/bucket-1/objects/file1.txt/url?expires=3600"
+```
+
+### Create a bucket
+```bash
+curl -X POST \
+  http://localhost:5010/buckets/new-bucket
+```
+
+## Integration with Existing Projects
+
+### As a Docker Service
+
+Add to your existing `docker-compose.yml`:
+
+```yaml
+services:
+  minio-microservice:
+    build: ./minio-microservice
+    ports:
+      - "5000:5000"
+    environment:
+      - MINIO_ENDPOINT=your-minio-endpoint:9000
+      - MINIO_ACCESS_KEY=your-access-key
+      - MINIO_SECRET_KEY=your-secret-key
+    networks:
+      - your-network
+```
+
+### As a Python Module
+
+You can also import and use the MinIO client directly:
+
+```python
+from app import minio_client
+
+# Use the client in your application
+buckets = minio_client.list_buckets()
+```
+
+## Monitoring
+
+The service includes built-in health checks:
+- Docker health check on `/health` endpoint
+- MinIO connection verification
+- Automatic logging of operations
+
+## Security Considerations
+
+- Change default MinIO credentials in production
+- Use HTTPS in production (set `MINIO_SECURE=true`)
+- Implement authentication/authorization as needed
+- Configure proper network security
+- Use environment variables for sensitive configuration
+
+## Development
+
+To run in development mode:
+
+```bash
+export DEBUG=true
+python app.py
+```
+
+## License
+
+This microservice is provided as-is for integration into your existing projects.

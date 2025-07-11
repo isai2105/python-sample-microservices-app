@@ -1,3 +1,8 @@
+TODO minIO
+1. Integrate with the code as a step .. import
+2. Get rid of the "unhealthy" status displayed in docker ps
+3. Refactor all other services to make sure they all have their separate setup like this minIO service
+
 # Python microservices application
 
 This application demonstrates how to connect to multiple microservices running in Docker containers.

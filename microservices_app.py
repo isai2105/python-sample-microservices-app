@@ -21,7 +21,16 @@ import pika  # RabbitMQ client
 from elasticsearch import Elasticsearch
 import aiohttp
 
+# import microservice modules
+import minio_service.app as minioService
+
+# import microservices clients
+from MinIOServiceClient import MinIOServiceClient
+
 # Configure logging to track all service interactions
+# Adding a time stamp on the name
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S") # e.g., "20250711_165900"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -77,6 +86,9 @@ class MicroservicesOrchestrator:
         self.redis_client = None
         self.rabbitmq_connection = None
         self.elasticsearch_client = None
+
+        # microservices clients
+        self.minioClient = MinIOServiceClient()
         
     async def initialize_connections(self):
         """
@@ -526,6 +538,14 @@ class MicroservicesOrchestrator:
         if self.rabbitmq_connection:
             self.rabbitmq_connection.close()
             logger.info("✓ RabbitMQ connection closed")
+    
+    def createLastRunLogFile():
+        last_run_file_name = "last_run.txt"
+        with open(last_run_file_name, "w") as file:
+            file.write(f"{timestamp}")
+        
+        logger.debug("✓ Last run file created successfully")
+
 
 
 async def main():
@@ -533,7 +553,7 @@ async def main():
     Main application entry point
     Demonstrates a complete microservices workflow
     """
-    logger.info("=== Microservices Learning Application Started ===")
+    logger.info(f"{timestamp}. === Microservices Learning Application Started ===")
     
     # Initialize the orchestrator
     orchestrator = MicroservicesOrchestrator()
@@ -544,7 +564,7 @@ async def main():
         
         # Step 2: Perform health checks
         health_status = await orchestrator.health_check_all_services()
-        logger.info(f"Health Status: {health_status}")
+        logger.info(f"{timestamp}. Health Status: {health_status}")
         
         # Step 3: Simulate user operations across multiple services
         sample_users = [
@@ -575,12 +595,12 @@ async def main():
             
         # Step 4: Demonstrate search capabilities
         search_results = await orchestrator.search_users("Alice")
-        logger.info(f"Search results: {len(search_results)} found")
+        logger.info(f"{timestamp}. Search results: {len(search_results)} found")
         
         # Step 5: Demonstrate caching, pulling the data from Redis
         cached_session = await orchestrator.get_cached_user_session(1)
         if cached_session:
-            logger.info(f"Cached session found: {cached_session['name']}")
+            logger.info(f"{timestamp}. Cached session found: {cached_session['name']}")
             
         # Step 6: Process message queue
         await orchestrator.process_message_queue()
@@ -588,16 +608,19 @@ async def main():
         # Step 7: Make external API calls
         await orchestrator.call_external_api_service("/status")
         
-        logger.info("=== All microservices operations completed successfully ===")
+        # calling the MinIO service through the client
+        await orchestrator.minioClient.upload_last_run_file('requirements.txt', f"{timestamp}.txt")
+
+        logger.info(f"{timestamp}. === All microservices operations completed successfully ===")
         
     except KeyboardInterrupt:
-        logger.info("Application interrupted by user")
+        logger.info(f"{timestamp}. Application interrupted by user")
     except Exception as e:
-        logger.error(f"Application error: {e}")
+        logger.error(f"{timestamp}. Application error: {e}")
     finally:
         # Always clean up connections
         await orchestrator.cleanup_connections()
-        logger.info("=== Microservices Learning Application Finished ===")
+        logger.info(f"{timestamp}. === Microservices Learning Application Finished ===")
 
 
 # In a Python file, the code within the if __name__ == "__main__": block is executed when the file is run directly as a script. 
